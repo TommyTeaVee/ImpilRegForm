@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Registration {
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  fullName       String
+  email          String
+  phone          String
+  dob            DateTime
+  gender         String
+  modelType      String      // 'Featured' or 'InHouse'
+  bio            String?     // required if InHouse
+  allergiesOrSkin String?    // required if InHouse
+
+  // measurements
+  height         Float?
+  weight         Float?
+  bust           Float?
+  waist          Float?
+  hips           Float?
+  shoe           String?
+  hairColor      String?
+  eyeColor       String?
+
+  // socials
+  facebook       String?
+  instagram      String?
+  tiktok         String?
+
+  // visual arts (checkbox multi-select)
+  visualArts     String[]    // Postgres text[]
+  status         String?     // 'approved' | 'rejected' | 'pending'
+
+  // images stored as S3 URLs
+  profileImage   String?
+  fullBodyImage  String?
+  fullDress      String?
+  fullShorts     String?
+  fullJeans      String?
+  closeForward   String?
+  closeLeft      String?
+  closeRight     String?
+  sportswear     String?
+  summerwear     String?
+  swimwear       String?
+
+  extraImages    String[]    // text[]
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin")
+}
