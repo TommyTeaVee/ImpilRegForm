@@ -35,7 +35,8 @@ model Registration {
   facebook       String?
   instagram      String?
   tiktok         String?
-
+  portfolio       String?
+  agency          String?
   // visual arts (checkbox multi-select)
   visualArts     String[]    // Postgres text[]
   status         String?     // 'approved' | 'rejected' | 'pending'

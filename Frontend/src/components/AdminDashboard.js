@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getRegistrations, updateRegistrationStatus, deleteRegistration } from "../api";
 import { Link } from "react-router-dom";
-
+  
 export default function AdminDashboard() {
   const [items, setItems] = useState([]);
 

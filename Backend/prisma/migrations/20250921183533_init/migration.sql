@@ -22,6 +22,8 @@ CREATE TABLE "public"."Registration" (
     "facebook" TEXT,
     "instagram" TEXT,
     "tiktok" TEXT,
+    "portfolio" TEXT,
+    "agency" TEXT,
     "visualArts" TEXT[],
     "status" TEXT,
     "profileImage" TEXT,

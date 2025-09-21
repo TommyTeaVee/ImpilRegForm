@@ -1,50 +1,63 @@
 const express = require("express");
-const { upload } = require("../utils/upload");
+const { upload, toCDN } = require("../utils/upload");
 const prisma = require("../auth/Admin");
-
 const router = express.Router();
+const { notifyModelApproved } = require("../utils/notifications");
 
 const fieldDefs = [
-  { name: "profileImage", maxCount: 1 },
-  { name: "fullBodyImage", maxCount: 1 },
-  { name: "fullDress", maxCount: 1 },
-  { name: "fullShorts", maxCount: 1 },
-  { name: "fullJeans", maxCount: 1 },
-  { name: "closeForward", maxCount: 1 },
-  { name: "closeLeft", maxCount: 1 },
-  { name: "closeRight", maxCount: 1 },
-  { name: "sportswear", maxCount: 1 },
-  { name: "summerwear", maxCount: 1 },
-  { name: "swimwear", maxCount: 1 },
+  { name: "profileImage", maxCount: 3 },
+  { name: "fullBodyImage", maxCount: 3 },
+  { name: "fullDress", maxCount: 3 },
+  { name: "fullShorts", maxCount: 3 },
+  { name: "fullJeans", maxCount: 3 },
+  { name: "closeForward", maxCount: 3 },
+  { name: "closeLeft", maxCount: 3 },
+  { name: "closeRight", maxCount: 3 },
+  { name: "sportswear", maxCount: 3 },
+  { name: "summerwear", maxCount: 3 },
+  { name: "swimwear", maxCount: 3 },
   { name: "extraImages", maxCount: 10 },
 ];
 
 function validateBody(b) {
   const required = ["fullName", "email", "phone", "dob", "gender", "modelType"];
   for (const k of required) if (!b[k]) return `Missing required field: ${k}`;
-  if (!["Featured", "InHouse"].includes(b.modelType)) return "modelType must be 'Featured' or 'InHouse'";
+
+  if (!["Featured", "InHouse"].includes(b.modelType))
+    return "modelType must be 'Featured' or 'InHouse'";
+
   if (b.modelType === "InHouse") {
     if (!b.bio) return "InHouse requires bio";
     if (!b.allergiesOrSkin) return "InHouse requires allergies/skin info";
   }
+
+  if (b.modelType === "Featured") {
+    if (!b.portfolio) return "Featured model requires portfolio link";
+    if (!b.agency) return "Featured model requires agency name";
+  }
+
   return null;
 }
 
-const pickUrl = (files, key) => files?.[key]?.[0]?.location || null;
+// wrap file urls with CloudFront
+const pickUrl = (files, key) => {
+  const loc = files?.[key]?.[0]?.location || null;
+  return loc ? toCDN(loc) : null;
+};
 
-// Create
+// Create registration
 router.post("/", upload.fields(fieldDefs), async (req, res) => {
   try {
     let visualArts = req.body.visualArts;
-    if (typeof visualArts === "string") visualArts = [visualArts];
     if (!visualArts) visualArts = [];
-    visualArts = visualArts.filter(v => v && v.trim() !== "");
+    if (typeof visualArts === "string") visualArts = [visualArts];
+    visualArts = visualArts.filter((v) => v && v.trim() !== "");
 
     const body = { ...req.body, visualArts };
     const err = validateBody(body);
     if (err) return res.status(400).json({ error: err });
 
-    const extras = (req.files?.extraImages || []).map(f => f.location);
+    const extras = (req.files?.extraImages || []).map((f) => toCDN(f.location));
 
     const created = await prisma.registration.create({
       data: {
@@ -54,8 +67,13 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
         dob: new Date(body.dob),
         gender: body.gender,
         modelType: body.modelType,
-        bio: body.bio || null,
-        allergiesOrSkin: body.allergiesOrSkin || null,
+
+        // Conditional fields
+        bio: body.modelType === "InHouse" ? body.bio : null,
+        allergiesOrSkin: body.modelType === "InHouse" ? body.allergiesOrSkin : null,
+        portfolio: body.modelType === "Featured" ? body.portfolio : null,
+        agency: body.modelType === "Featured" ? body.agency : null,
+        visualArts: body.modelType === "InHouse" ? visualArts : [],
 
         height: body.height ? Number(body.height) : null,
         weight: body.weight ? Number(body.weight) : null,
@@ -70,8 +88,6 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
         instagram: body.instagram || null,
         tiktok: body.tiktok || null,
 
-        visualArts,
-
         profileImage: pickUrl(req.files, "profileImage"),
         fullBodyImage: pickUrl(req.files, "fullBodyImage"),
         fullDress: pickUrl(req.files, "fullDress"),
@@ -83,7 +99,6 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
         sportswear: pickUrl(req.files, "sportswear"),
         summerwear: pickUrl(req.files, "summerwear"),
         swimwear: pickUrl(req.files, "swimwear"),
-
         extraImages: extras,
         status: "pending",
       },
@@ -96,30 +111,36 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
   }
 });
 
-// List (admin)
-router.get("/", async (req, res) => {
+// health check
+router.get("/", (req, res) => res.send("Welcome, server online"));
+
+// get all registrations
+router.get("/all", async (req, res) => {
   try {
     const items = await prisma.registration.findMany({
       orderBy: { createdAt: "desc" },
     });
     res.json(items);
+    console.log(items.map(r => r.id));
   } catch {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "server error" });
   }
 });
 
-// Get by id (admin)
-router.get("/:id", async (req, res) => {
+// get one registration
+router.get("/all/:id", async (req, res) => {
   try {
-    const item = await prisma.registration.findUnique({ where: { id: req.params.id } });
-    if (!item) return res.status(404).json({ error: "Not found" });
+    const item = await prisma.registration.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!item) return res.status(404).json({ error: "Not Found" });
     res.json(item);
   } catch {
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// Update status (admin)
+// handle status update
 router.patch("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
@@ -127,13 +148,20 @@ router.patch("/:id/status", async (req, res) => {
       where: { id: req.params.id },
       data: { status },
     });
+
+    if (status === "approved") {
+      const { email, phone, fullName } = updated;
+      await notifyModelApproved(email, phone, fullName);
+    }
+
     res.json(updated);
-  } catch {
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// Delete (admin)
+// delete registration
 router.delete("/:id", async (req, res) => {
   try {
     await prisma.registration.delete({ where: { id: req.params.id } });
