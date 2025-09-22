@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5050/api",
+  baseURL: process.env.SERVER_URL,
 });
 
 export const registerModel = (formData) => API.post("/registrations", formData);
