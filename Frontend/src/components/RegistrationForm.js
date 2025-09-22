@@ -9,7 +9,7 @@ const steps = ["Information", "Measurements", "Socials", "Pictures", "Review"];
 const imageFields = [
   { name: "profileImage", label: "Profile Image", max: 1 },
   { name: "fullBodyImage", label: "Full Body Image", max: 1 },
-  { name: "fullDress", label: "Full Dress", max: 3 },
+  { name: "fullDress", label: "Full Dress / Pants", max: 3 },
   { name: "fullShorts", label: "Full Shorts", max: 3 },
   { name: "fullJeans", label: "Full Jeans", max: 3 },
   { name: "closeForward", label: "Close Forward", max: 2 },
@@ -17,7 +17,7 @@ const imageFields = [
   { name: "closeRight", label: "Close Right", max: 2 },
   { name: "sportswear", label: "Sportswear", max: 3 },
   { name: "summerwear", label: "Summerwear", max: 3 },
-  { name: "swimwear", label: "Swimwear", max: 3 },
+  { name: "swimwear", label: "Swimwear Trunks", max: 3 },
 ];
 
 // Visual Arts options
@@ -260,6 +260,7 @@ export default function TalentApplicationForm() {
               onChange={handleChange}
               className="p-3 rounded bg-black/40 border border-yellow-500/40"
             />
+            
             <select
               name="gender"
               value={formData.gender}
