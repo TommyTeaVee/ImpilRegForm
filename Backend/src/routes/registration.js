@@ -3,7 +3,7 @@ const { upload, toCDN } = require("../utils/upload");
 const prisma = require("../auth/Admin");
 const router = express.Router();
 const { notifyModelApproved } = require("../utils/notifications");
-
+require('dotenv').config()
 const fieldDefs = [
   { name: "profileImage", maxCount: 3 },
   { name: "fullBodyImage", maxCount: 3 },

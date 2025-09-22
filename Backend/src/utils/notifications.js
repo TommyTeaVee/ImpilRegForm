@@ -1,5 +1,5 @@
 const AWS = require("aws-sdk");
-
+require('dotenv').config()
 // Configure AWS
 AWS.config.update({
   region: process.env.AWS_REGION, 
