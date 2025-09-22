@@ -219,12 +219,16 @@ export default function TalentApplicationForm() {
             {/* Banner */}
             <div className="w-full relative mb-6">
               <img
-                src="https://images.pexels.com/photos/3789871/pexels-photo-3789871.jpeg"
+                src="https://impilomag.co.za/media/thando.jpg"
                 alt="banner"
-                className="w-full h-48 object-cover rounded-2xl opacity-90"
+                className="w-full h-48 object-cover rounded-2xl"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md rounded-2xl">
-                <div className="w-16 h-16 bg-yellow-500 rounded-full mb-2" />
+                <img
+                src="https://d16o5gtkyqkgf2.cloudfront.net/assets/impilo_logo.png"
+                alt="banner"
+                className="w-23 h-20 avatar rounded-full "
+              />
                 <h1 className="text-2xl md:text-3xl font-bold text-yellow-400">
                   Impilo Talent Agency
                 </h1>
@@ -299,7 +303,9 @@ export default function TalentApplicationForm() {
                   className="p-3 rounded bg-black/40 border border-yellow-500/40"
                 />
                 {/* Visual Arts */}
-                <div className="grid grid-cols-2 gap-2 mt-2">
+                
+                  <label className="text-xl  items-center justify-center font-semibold text-yellow-400">Visual Arts</label>
+                  <br></br><div className="grid grid-cols-2 gap-2 mt-2">
                   {visualArtsOptions.map((art) => (
                     <label
                       key={art}
