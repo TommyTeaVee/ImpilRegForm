@@ -2,8 +2,10 @@ import axios from "axios";
 
 const API = axios.create({
   baseURL: process.env.REACT_APP_SERVER_URL,
-});
 
+}); 
+
+export const LoginDetails = (formdata) =>API.post("/auth/login", formdata)
 export const registerModel = (formData) => API.post("/registrations", formData);
 export const getRegistrations = () => API.get("/registrations/all");
 export const updateRegistrationStatus = (id, status) => API.patch(`/registrations/${id}/status`, { status });

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import StepperForm from "./components/RegistrationForm";
 import AdminDashboard from "./components/AdminDashboard";
 import RegistrationDetail from "./components/RegistrationDetail";
+import AdminLogin from "./components/AdminLogin";
 
 export default function App() {
   return (
@@ -13,8 +14,8 @@ export default function App() {
           <Route path="/" element={<StepperForm />} />
 
           {/* Admin Dashboard */}
-          <Route path="/admin" element={<AdminDashboard />} />
-
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />  
           {/* Registration Detail Page */}
           <Route path="/admin/registrations/:id" element={<RegistrationDetail />} />
 
