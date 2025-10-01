@@ -19,6 +19,42 @@ const sns = new AWS.SNS({ apiVersion: "2010-03-31" });
  * @param {string} phone - recipient phone number (include country code, e.g., +27712345678)
  * @param {string} fullName - recipient name
  */
+async function notifyModelDissApproved(email, phone, fullName) {
+  try {
+    // --- Email via SES ---
+    const emailParams = {
+      Source: "no-reply@impilomag.co.za",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Subject: { Data: "Registration not Approved!" },
+        Body: {
+          Text: {
+            Data: `Hi ${fullName},\n\n We regret to inform you that your Modelling application was not succesfully approved.\n\nBest regards,\nImpilo Team`,
+          },
+        },
+      },
+    };
+    await ses.sendEmail(emailParams).promise();
+
+    // --- SMS via SNS ---
+    if (phone) {
+      const smsParams = {
+        Message: `Hi ${fullName}, We regret to inform you that your Modelling application was not succesfully approved, Impilo Tram`,
+        PhoneNumber: phone,
+      };
+      await sns.publish(smsParams).promise();
+    }
+
+    console.log(`Notifications sent to ${email} and ${phone}`);
+    return true;
+  } catch (err) {
+    console.error("Error sending notifications:", err);
+    return false;
+  }
+}
+
+module.exports = { notifyModelDissApproved };
+
 async function notifyModelApproved(email, phone, fullName) {
   try {
     // --- Email via SES ---

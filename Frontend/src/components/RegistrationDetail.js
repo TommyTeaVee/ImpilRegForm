@@ -4,6 +4,7 @@ import {
   getRegistrationById,
   updateRegistrationStatus,
   deleteRegistration,
+  getRegistrations,
 } from "../api";
 
 const imageSections = [

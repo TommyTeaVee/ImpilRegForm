@@ -2,7 +2,7 @@ const express = require("express");
 const { upload, toCDN } = require("../utils/upload");
 const prisma = require("../auth/Admin");
 const router = express.Router();
-const { notifyModelApproved } = require("../utils/notifications");
+const { notifyModelApproved, notifyModelDissApproved } = require("../utils/notifications");
 require('dotenv').config()
 const fieldDefs = [
   { name: "profileImage", maxCount: 3 },
@@ -140,6 +140,29 @@ router.get("/all/:id", async (req, res) => {
   }
 });
 
+// handle status update for approved ir dissaproved
+router.patch("/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updated = await prisma.registration.update({
+      where: { id: req.params.id },
+      data: { status },
+    });
+
+    if (status === "approved") {
+      const { email, phone, fullName } = updated;
+      await notifyModelApproved(email, phone, fullName);
+    }else if(status==="rejected"){
+      const {email, phone, fullName} = updated;
+      await notifyModelDissApproved(email, phone, fullName)
+    }
+
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 // handle status update
 router.patch("/:id/status", async (req, res) => {
   try {
