@@ -53,7 +53,7 @@ async function notifyModelDissApproved(email, phone, fullName) {
   }
 }
 
-module.exports = { notifyModelDissApproved };
+
 
 async function notifyModelApproved(email, phone, fullName) {
   try {
@@ -89,4 +89,4 @@ async function notifyModelApproved(email, phone, fullName) {
   }
 }
 
-module.exports = { notifyModelApproved };
+module.exports = { notifyModelApproved, notifyModelDissApproved };
