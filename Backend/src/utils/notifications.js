@@ -96,7 +96,7 @@ async function notifyNewSubmission(email, phone, fullName) {
   try {
     // --- Email to Admin ---
     const emailParams = {
-      Source: "no-reply@impilomag.co.za", // Must be SES verified
+      Source: "agency@impilomag.co.za", // Must be SES verified
       Destination: { ToAddresses: ["admin@impilomag.co.za"] }, // <-- your email
       Message: {
         Subject: { Data: "📩 New Model Registration Submitted" },
@@ -112,7 +112,7 @@ async function notifyNewSubmission(email, phone, fullName) {
     // --- SMS to Admin ---
     const smsParams = {
       Message: `📩 New Model Submission: ${fullName}, ${email}, ${phone}`,
-      PhoneNumber: "+27XXXXXXXXX", // <-- Replace with YOUR number (E.164 format)
+      PhoneNumber: "+27672806288", // <-- Replace with YOUR number (E.164 format)
     };
     await sns.publish(smsParams).promise();
 
