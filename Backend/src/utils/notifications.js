@@ -89,4 +89,40 @@ async function notifyModelApproved(email, phone, fullName) {
   }
 }
 
-module.exports = { notifyModelApproved, notifyModelDissApproved };
+
+
+// Notification for new submission
+async function notifyNewSubmission(email, phone, fullName) {
+  try {
+    // --- Email to Admin ---
+    const emailParams = {
+      Source: "no-reply@impilomag.co.za", // Must be SES verified
+      Destination: { ToAddresses: ["admin@impilomag.co.za"] }, // <-- your email
+      Message: {
+        Subject: { Data: "📩 New Model Registration Submitted" },
+        Body: {
+          Text: {
+            Data: `Hi Admin,\n\nA new model registration has been submitted.\n\nName: ${fullName}\nEmail: ${email}\nPhone: ${phone}\n\nLogin to the dashboard to review.\n\n- Impilo Talent System`,
+          },
+        },
+      },
+    };
+    await ses.sendEmail(emailParams).promise();
+
+    // --- SMS to Admin ---
+    const smsParams = {
+      Message: `📩 New Model Submission: ${fullName}, ${email}, ${phone}`,
+      PhoneNumber: "+27XXXXXXXXX", // <-- Replace with YOUR number (E.164 format)
+    };
+    await sns.publish(smsParams).promise();
+
+    console.log(`✅ Admin notified: ${fullName}`);
+    return true;
+  } catch (err) {
+    console.error("❌ Error notifying admin:", err);
+    return false;
+  }
+}
+
+
+module.exports = { notifyModelApproved, notifyModelDissApproved,  notifyNewSubmission };

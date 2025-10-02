@@ -2,7 +2,7 @@ const express = require("express");
 const { upload, toCDN } = require("../utils/upload");
 const prisma = require("../auth/Admin");
 const router = express.Router();
-const { notifyModelApproved, notifyModelDissApproved } = require("../utils/notifications");
+const { notifyModelApproved, notifyModelDissApproved, notifyNewSubmission } = require("../utils/notifications");
 require('dotenv').config()
 const fieldDefs = [
   { name: "profileImage", maxCount: 3 },
@@ -114,6 +114,10 @@ if(exists){
   return res.status(400).json({message:" A user with this phone or email already exists"})
 }
     res.status(201).json({ message: "Registration saved", registration: created });
+    
+    await notifyNewSubmission(newReg.email, newReg.phone, newReg.fullName);
+
+    res.json(newReg);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Server error" });
