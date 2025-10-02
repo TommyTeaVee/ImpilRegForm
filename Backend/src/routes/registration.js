@@ -108,7 +108,7 @@ const exists = prisma.registration.findFirst({
 
   where: {email: body.email,
         phone: body.phone,
-    OR:[{bodyemail}, {phone}]
+    OR:[{email}, {phone}]
   }
 })
 
