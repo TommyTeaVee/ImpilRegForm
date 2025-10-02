@@ -105,10 +105,10 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
     });
 //check if phone or email exist
 const exists = prisma.registration.findFirst({
-email: body.email,
+
+  where: {email: body.email,
         phone: body.phone,
-  where: {
-    OR:[{email}, {phone}]
+    OR:[{bodyemail}, {phone}]
   }
 })
 
