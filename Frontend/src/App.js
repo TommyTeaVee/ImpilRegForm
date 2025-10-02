@@ -4,15 +4,16 @@ import StepperForm from "./components/RegistrationForm";
 import AdminDashboard from "./components/AdminDashboard";
 import RegistrationDetail from "./components/RegistrationDetail";
 import AdminLogin from "./components/AdminLogin";
+import ModelRegistrationForm from "./components/NewForm";
 
 export default function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-100">
         <Routes>
-          {/* Frontend Registration Form */}
-          <Route path="/" element={<StepperForm />} />
-
+          {/* Frontend Registration Forms */}
+          <Route path="/old" element={<StepperForm />} />
+          <Route path="/" element={<ModelRegistrationForm/>}/>
           {/* Admin Dashboard */}
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />  

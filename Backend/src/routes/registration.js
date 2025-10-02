@@ -2,7 +2,11 @@ const express = require("express");
 const { upload, toCDN } = require("../utils/upload");
 const prisma = require("../auth/Admin");
 const router = express.Router();
-const { notifyModelApproved, notifyModelDissApproved, notifyNewSubmission } = require("../utils/notifications");
+const {
+  notifyModelApproved,
+  notifyModelDissApproved,
+  notifyNewSubmission,
+} = require("../utils/notifications");
 require("dotenv").config();
 
 const fieldDefs = [
@@ -119,12 +123,16 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
       },
     });
 
-    await notifyNewSubmission(created.email, created.phone, created.fullName);
-
+    // ✅ Respond immediately
     res.status(201).json({
       message: "Registration saved",
       registration: created,
     });
+
+    // ✅ Trigger notifications in background (non-blocking)
+    notifyNewSubmission(created.email, created.phone, created.fullName).catch(
+      (err) => console.error("Notify error:", err)
+    );
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Server error" });
@@ -170,10 +178,14 @@ router.patch("/:id/status", async (req, res) => {
 
     if (status === "approved") {
       const { email, phone, fullName } = updated;
-      await notifyModelApproved(email, phone, fullName);
+      notifyModelApproved(email, phone, fullName).catch((e) =>
+        console.error("Notify approve error:", e)
+      );
     } else if (status === "rejected") {
       const { email, phone, fullName } = updated;
-      await notifyModelDissApproved(email, phone, fullName);
+      notifyModelDissApproved(email, phone, fullName).catch((e) =>
+        console.error("Notify reject error:", e)
+      );
     }
 
     res.json(updated);
