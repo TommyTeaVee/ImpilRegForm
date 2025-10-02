@@ -3,7 +3,8 @@ const { upload, toCDN } = require("../utils/upload");
 const prisma = require("../auth/Admin");
 const router = express.Router();
 const { notifyModelApproved, notifyModelDissApproved, notifyNewSubmission } = require("../utils/notifications");
-require('dotenv').config()
+require("dotenv").config();
+
 const fieldDefs = [
   { name: "profileImage", maxCount: 3 },
   { name: "fullBodyImage", maxCount: 3 },
@@ -57,8 +58,21 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
     const err = validateBody(body);
     if (err) return res.status(400).json({ error: err });
 
+    // ✅ check if phone/email exists first
+    const exists = await prisma.registration.findFirst({
+      where: {
+        OR: [{ email: body.email }, { phone: body.phone }],
+      },
+    });
+
+    if (exists) {
+      return res
+        .status(400)
+        .json({ message: "A user with this phone or email already exists" });
+    }
+
     const extras = (req.files?.extraImages || []).map((f) => toCDN(f.location));
-    
+
     const created = await prisma.registration.create({
       data: {
         fullName: body.fullName,
@@ -70,7 +84,8 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
 
         // Conditional fields
         bio: body.modelType === "InHouse" ? body.bio : null,
-        allergiesOrSkin: body.modelType === "InHouse" ? body.allergiesOrSkin : null,
+        allergiesOrSkin:
+          body.modelType === "InHouse" ? body.allergiesOrSkin : null,
         portfolio: body.modelType === "Featured" ? body.portfolio : null,
         agency: body.modelType === "Featured" ? body.agency : null,
         visualArts: body.modelType === "InHouse" ? visualArts : [],
@@ -103,23 +118,13 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
         status: "pending",
       },
     });
-//check if phone or email exist
-const exists = prisma.registration.findFirst({
 
-  where: {email: body.email,
-        phone: body.phone,
-    OR:[{email}, {phone}]
-  }
-})
+    await notifyNewSubmission(created.email, created.phone, created.fullName);
 
-if(exists){
-  return res.status(400).json({message:" A user with this phone or email already exists"})
-}
-    res.status(201).json({ message: "Registration saved", registration: created });
-    
-    await notifyNewSubmission(newReg.email, newReg.phone, newReg.fullName);
-
-    res.json(newReg);
+    res.status(201).json({
+      message: "Registration saved",
+      registration: created,
+    });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Server error" });
@@ -136,7 +141,6 @@ router.get("/all", async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
     res.json(items);
-    console.log(items.map(r => r.id));
   } catch {
     res.status(500).json({ error: "server error" });
   }
@@ -155,7 +159,7 @@ router.get("/all/:id", async (req, res) => {
   }
 });
 
-// handle status update for approved ir dissaproved
+// handle status update (approved/rejected)
 router.patch("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
@@ -167,29 +171,9 @@ router.patch("/:id/status", async (req, res) => {
     if (status === "approved") {
       const { email, phone, fullName } = updated;
       await notifyModelApproved(email, phone, fullName);
-    }else if(status==="rejected"){
-      const {email, phone, fullName} = updated;
-      await notifyModelDissApproved(email, phone, fullName)
-    }
-
-    res.json(updated);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-// handle status update
-router.patch("/:id/status", async (req, res) => {
-  try {
-    const { status } = req.body;
-    const updated = await prisma.registration.update({
-      where: { id: req.params.id },
-      data: { status },
-    });
-
-    if (status === "approved") {
+    } else if (status === "rejected") {
       const { email, phone, fullName } = updated;
-      await notifyModelApproved(email, phone, fullName);
+      await notifyModelDissApproved(email, phone, fullName);
     }
 
     res.json(updated);
