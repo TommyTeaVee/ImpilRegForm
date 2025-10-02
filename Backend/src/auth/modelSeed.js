@@ -7,6 +7,7 @@ async function modelSeed() {
   //await prisma.registration.deleteMany();
 
   // Jane – InHouse Model
+  
   await prisma.registration.create({
     data: {
       fullName: "Jane Doe",

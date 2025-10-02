@@ -58,7 +58,7 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
     if (err) return res.status(400).json({ error: err });
 
     const extras = (req.files?.extraImages || []).map((f) => toCDN(f.location));
-
+    
     const created = await prisma.registration.create({
       data: {
         fullName: body.fullName,
@@ -103,7 +103,16 @@ router.post("/", upload.fields(fieldDefs), async (req, res) => {
         status: "pending",
       },
     });
+//check if phone or email exist
+const exists = prisma.registration.findFirst({
+  where: {
+    OR:[{email}, {phone}]
+  }
+})
 
+if(exists){
+  return res.status(400).json({message:" A user with this phone or email already exists"})
+}
     res.status(201).json({ message: "Registration saved", registration: created });
   } catch (e) {
     console.error(e);
