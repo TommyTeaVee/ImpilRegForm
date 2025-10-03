@@ -26,7 +26,7 @@ const imageFields = [
   { name: "sportswear", label: "Sportswear", max: 3 },
   { name: "summerwear", label: "Summerwear", max: 3 },
   { name: "swimwear", label: "Swimwear Trunks", max: 3 },
-  { name: "extraImages", label: "Extra Images", max: 10 },
+  { name: "extraImages", label: "Runway / Optional Images", max: 5 },
 ];
 
 const visualArtsOptions = [
@@ -389,7 +389,7 @@ export default function TalentApplicationForm() {
                 />
                 <input
                   name="allergiesOrSkin"
-                  placeholder="Allergies / Skin Issues"
+                  placeholder="Allergies / Skin related Issues"
                   value={formData.allergiesOrSkin}
                   onChange={handleChange}
                   className="p-3 rounded bg-black/40 border border-yellow-500/40"
