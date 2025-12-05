@@ -9,8 +9,9 @@ app.use(express.json({limit:"500mb"}));
  app.use(express.urlencoded({ extended: true, limit: "500mb" }));
  
 // ALLOW YOUR FRONTEND
+const cors_origin = process.env.CORS_ORIGIN
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : []
-app.use(cors({allowedOrigins}));
+app.use(cors({cors_origin}));
 
 app.use(express.json());
 
