@@ -114,6 +114,8 @@ async function notifyNewSubmission(email, phone, fullName) {
       Message: `📩 New Model Submission: ${fullName}, ${email}, ${phone}`,
       PhoneNumber: "+27672806288", // <-- Replace with YOUR number (E.164 format)
     };
+
+    
     await sns.publish(smsParams).promise();
 
     console.log(`✅ Admin notified: ${fullName}`);
@@ -123,6 +125,40 @@ async function notifyNewSubmission(email, phone, fullName) {
     return false;
   }
 }
+// Send approval OR welcome email
+async function notifySubscriber(email, phone, fullName) {
+  try {
+    const emailParams = {
+      Source: "no-reply@impilomag.co.za",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Subject: { Data: "Welcome to Impilo!" },
+        Body: {
+          Text: {
+            Data: `Hi ${fullName},\n\nYou have been successfully added to our Impilo Magazine subscriber list.\nThank you for joining us!\n\nRegards,\nImpilo Team`,
+          },
+        },
+      },
+    };
+
+    await ses.sendEmail(emailParams).promise();
+
+    if (phone) {
+      await sns
+        .publish({
+          Message: `Hi ${fullName}, welcome to Impilo Magazine!`,
+          PhoneNumber: phone,
+        })
+        .promise();
+    }
+
+    console.log(`✉️ Welcome email sent to ${email}`);
+    return true;
+  } catch (err) {
+    console.error("Error sending notifications:", err);
+    return false;
+  }
+}
 
 
-module.exports = { notifyModelApproved, notifyModelDissApproved,  notifyNewSubmission };
+module.exports = { notifyModelApproved, notifyModelDissApproved,  notifyNewSubmission, notifySubscriber };
