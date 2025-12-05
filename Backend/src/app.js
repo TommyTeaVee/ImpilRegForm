@@ -9,12 +9,8 @@ app.use(express.json({limit:"500mb"}));
  app.use(express.urlencoded({ extended: true, limit: "500mb" }));
  
 // ALLOW YOUR FRONTEND
-const allowedOrigins = [
-  "http://127.0.0.1:5500",
-  "http://localhost:5500",
-  "http://localhost:3000",   // optional if using React
-];
-app.use(cors({allowedOrigins  }));
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+app.use(cors({allowedOrigins}));
 
 app.use(express.json());
 
