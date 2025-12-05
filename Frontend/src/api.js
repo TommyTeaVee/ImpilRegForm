@@ -5,9 +5,10 @@ const API = axios.create({
 
 }); 
 
-export const LoginDetails = (formdata) =>API.post("/auth/login", formdata)
-export const registerModel = (formData) => API.post("/registrations", formData);
-export const getRegistrations = () => API.get("/registrations/all");
-export const updateRegistrationStatus = (id, status) => API.patch(`/registrations/${id}/status`, { status });
-export const deleteRegistration = (id) => API.delete(`/registrations/${id}`);
+export const LoginDetails = (formdata) =>API.post("/api/auth/login", formdata)
+export const registerModel = (formData) => API.post("/api/registrations", formData);
+export const getRegistrations = () => API.get("/api/registrations/all");
+export const updateRegistrationStatus = (id, status) => API.patch(`/api/registrations/${id}/status`, { status });
+export const deleteRegistration = (id) => API.delete(`/api/registrations/${id}`);
 export const getRegistrationById = (id) => API.get(`/registrations/all/${id}`);
+export const loadSubscribers =() =>API.get('/subscribers')

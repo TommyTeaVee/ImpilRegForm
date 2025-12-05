@@ -9,15 +9,15 @@ const dbS3Seed = require("./auth/dbS3Seeds")
 
 const PORT = process.env.PORT || 5050;
 
-async function start() {
+/* async function start() {
 
     await prisma.$connect;
     await seedAdmin(),
     await seedModel(),
     await seedSubs();
-   await dbS3Seed()}
+   await dbS3Seed()} */
   try {
     app.listen(PORT, () => console.log(`🚀 Backend on http://localhost:${PORT}`)); } catch (e) {
     console.error("Failed to start:", e);
     process.exit(1);
-  }
+    }

@@ -16,38 +16,28 @@ router.get("/subscribers", async (req, res) => {
   }
 });
 
-// Subscribe route
 router.post("/subscribe", async (req, res) => {
-  const { email } = req.body;
-  const {fullname}=req.body
-  if (!email || !email.includes("@")) {
-    return res.json({ success: false, message: "Invalid email." });
-  }
-
   try {
-    // Create subscriber (ignore duplicates)
-    const saved =  prisma.subscriber.upsert({
-      where: { email,fullname },
-      update: {},
-      create: { email, fullname },
+    const { fullname, email } = req.body;
+
+    if (!fullname || !email) {
+      return res.json({ success: false, message: "Full name and email required" });
+    }
+
+    const saved = await prisma.subscriber.upsert({
+      where: { email },
+      update: { fullname },
+      create: { fullname, email },
     });
- 
-    // SEND WELCOME EMAIL
-    await notifySubscriber(
-      saved.email,
-      saved.fullname || "Subscriber"  // use actual name
-    );
-  
+
+    // SES
+    await notifySubscriber(saved.email, null, saved.fullname);
 
     return res.json({ success: true });
-  } catch (error) {
-    console.error("Subscription error:", error);
-    return res.json({
-      success: false, 
-      message: "Server error. Try again."
-    });
+  } catch (err) {
+    console.error("Subscription error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
-  
 });
 
 module.exports = router

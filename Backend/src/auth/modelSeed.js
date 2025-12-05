@@ -5,7 +5,7 @@ const { safeCreate } = require("../utils/safeCreate");
 async function modelSeed() {
   console.log("🌱 Seeding models...");
 
-  await prisma.registration.deleteMany();
+  //await prisma.registration.deleteMany();
 
   await safeCreate(
     "registration",

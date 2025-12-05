@@ -5,6 +5,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import RegistrationDetail from "./components/RegistrationDetail";
 import AdminLogin from "./components/AdminLogin";
 import ModelRegistrationForm from "./components/NewForm";
+import AdminSubscribers from "./components/AdminSubscribers";
 
 export default function App() {
   return (
@@ -19,7 +20,7 @@ export default function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />  
           {/* Registration Detail Page */}
           <Route path="/admin/registrations/:id" element={<RegistrationDetail />} />
-
+          <Route path="/admin/subscribers" element={<AdminSubscribers />} /> 
           {/* Redirect any unknown route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
