@@ -4,16 +4,6 @@ const prisma = new PrismaClient();
 const app = require("./app");
 import path from "path";
 import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-// Serve Frontend
-app.use(express.static(path.join(__dirname, "../../Frontend/build/index.htm")));
-
-// Catch-all: send React's index.html for ANY route not starting with /api
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../Frontend/build/index.html"));
-});
 //const seedAdmin = require("./auth/seedAdmin");
 //const seedModel = require("./auth/modelSeed")
 //const seedSubs = require('./auth/subscriberseed')
