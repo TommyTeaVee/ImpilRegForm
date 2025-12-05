@@ -10,5 +10,5 @@ export const registerModel = (formData) => API.post("/api/registrations", formDa
 export const getRegistrations = () => API.get("/api/registrations/all");
 export const updateRegistrationStatus = (id, status) => API.patch(`/api/registrations/${id}/status`, { status });
 export const deleteRegistration = (id) => API.delete(`/api/registrations/${id}`);
-export const getRegistrationById = (id) => API.get(`/registrations/all/${id}`);
-export const loadSubscribers =() =>API.get('/subscribers')
+export const getRegistrationById = (id) => API.get(`/apiregistrations/all/${id}`);
+export const loadSubscribers =() =>API.get('/api/subscribers')
