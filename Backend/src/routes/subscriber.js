@@ -1,4 +1,9 @@
-app.get("/api/subscribers", async (req, res) => {
+const express= require('express');
+const router= express.Router();
+const prisma = require("../auth/Admin");
+const { notifySubscriber } = require("../utils/notifications");
+
+router.get("/subscribers", async (req, res) => {
   try {
     const subs = await prisma.subscriber.findMany({
       orderBy: { subscribedAt: "desc" }
@@ -12,24 +17,25 @@ app.get("/api/subscribers", async (req, res) => {
 });
 
 // Subscribe route
-app.post("/subscribe", async (req, res) => {
+router.post("/subscribe", async (req, res) => {
   const { email } = req.body;
-
+  const {fullname}=req.body
   if (!email || !email.includes("@")) {
     return res.json({ success: false, message: "Invalid email." });
   }
 
   try {
     // Create subscriber (ignore duplicates)
-    await prisma.subscriber.upsert({
-      where: { email },
+    const saved =  prisma.subscriber.upsert({
+      where: { email,fullname },
       update: {},
-      create: { email },
+      create: { email, fullname },
     });
- await notifySubscriber(
+ 
+    // SEND WELCOME EMAIL
+    await notifySubscriber(
       saved.email,
-      null,              // no phone number
-      "Subscriber"       // placeholder name
+      saved.fullname || "Subscriber"  // use actual name
     );
   
 
@@ -43,3 +49,5 @@ app.post("/subscribe", async (req, res) => {
   }
   
 });
+
+module.exports = router

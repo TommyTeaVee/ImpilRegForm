@@ -17,9 +17,9 @@ const sns = new AWS.SNS({ apiVersion: "2010-03-31" });
  * Send email and SMS notification to model when approved
  * @param {string} email - recipient email
  * @param {string} phone - recipient phone number (include country code, e.g., +27712345678)
- * @param {string} fullName - recipient name
+ * @param {string} fullname - recipient name
  */
-async function notifyModelDissApproved(email, phone, fullName) {
+async function notifyModelDissApproved(email, phone, fullname) {
   try {
     // --- Email via SES ---
     const emailParams = {
@@ -29,7 +29,7 @@ async function notifyModelDissApproved(email, phone, fullName) {
         Subject: { Data: "Registration not Approved!" },
         Body: {
           Text: {
-            Data: `Hi ${fullName},\n\n We regret to inform you that your Modelling application was not succesfully approved.\n\nBest regards,\nImpilo Team`,
+            Data: `Hi ${fullname},\n\n We regret to inform you that your Modelling application was not succesfully approved.\n\nBest regards,\nImpilo Team`,
           },
         },
       },
@@ -39,7 +39,7 @@ async function notifyModelDissApproved(email, phone, fullName) {
     // --- SMS via SNS ---
     if (phone) {
       const smsParams = {
-        Message: `Hi ${fullName}, We regret to inform you that your Modelling application was not succesfully approved, Impilo Tram`,
+        Message: `Hi ${fullname}, We regret to inform you that your Modelling application was not succesfully approved, Impilo Tram`,
         PhoneNumber: phone,
       };
       await sns.publish(smsParams).promise();
@@ -55,7 +55,7 @@ async function notifyModelDissApproved(email, phone, fullName) {
 
 
 
-async function notifyModelApproved(email, phone, fullName) {
+async function notifyModelApproved(email, phone, fullname) {
   try {
     // --- Email via SES ---
     const emailParams = {
@@ -65,7 +65,7 @@ async function notifyModelApproved(email, phone, fullName) {
         Subject: { Data: "Registration Approved!" },
         Body: {
           Text: {
-            Data: `Hi ${fullName},\n\nYour model registration has been approved! Welcome to Impilo Talent Agency.\n\nBest regards,\nImpilo Team`,
+            Data: `Hi ${fullname},\n\nYour model registration has been approved! Welcome to Impilo Talent Agency.\n\nBest regards,\nImpilo Team`,
           },
         },
       },
@@ -75,7 +75,7 @@ async function notifyModelApproved(email, phone, fullName) {
     // --- SMS via SNS ---
     if (phone) {
       const smsParams = {
-        Message: `Hi ${fullName}, your model registration has been approved! - Impilo Talent Agency`,
+        Message: `Hi ${fullname}, your model registration has been approved! - Impilo Talent Agency`,
         PhoneNumber: phone,
       };
       await sns.publish(smsParams).promise();
@@ -92,7 +92,7 @@ async function notifyModelApproved(email, phone, fullName) {
 
 
 // Notification for new submission
-async function notifyNewSubmission(email, phone, fullName) {
+async function notifyNewSubmission(email, phone, fullname) {
   try {
     // --- Email to Admin ---
     const emailParams = {
@@ -102,7 +102,7 @@ async function notifyNewSubmission(email, phone, fullName) {
         Subject: { Data: "📩 New Model Registration Submitted" },
         Body: {
           Text: {
-            Data: `Hi Admin,\n\nA new model registration has been submitted.\n\nName: ${fullName}\nEmail: ${email}\nPhone: ${phone}\n\nLogin to the dashboard to review.\n\n- Impilo Talent System`,
+            Data: `Hi Admin,\n\nA new model registration has been submitted.\n\nName: ${fullname}\nEmail: ${email}\nPhone: ${phone}\n\nLogin to the dashboard to review.\n\n- Impilo Talent System`,
           },
         },
       },
@@ -111,14 +111,14 @@ async function notifyNewSubmission(email, phone, fullName) {
 
     // --- SMS to Admin ---
     const smsParams = {
-      Message: `📩 New Model Submission: ${fullName}, ${email}, ${phone}`,
+      Message: `📩 New Model Submission: ${fullname}, ${email}, ${phone}`,
       PhoneNumber: "+27672806288", // <-- Replace with YOUR number (E.164 format)
     };
 
     
     await sns.publish(smsParams).promise();
 
-    console.log(`✅ Admin notified: ${fullName}`);
+    console.log(`✅ Admin notified: ${fullname}`);
     return true;
   } catch (err) {
     console.error("❌ Error notifying admin:", err);
@@ -126,7 +126,7 @@ async function notifyNewSubmission(email, phone, fullName) {
   }
 }
 // Send approval OR welcome email
-async function notifySubscriber(email, phone, fullName) {
+async function notifySubscriber(email, fullname) {
   try {
     const emailParams = {
       Source: "no-reply@impilomag.co.za",
@@ -135,7 +135,7 @@ async function notifySubscriber(email, phone, fullName) {
         Subject: { Data: "Welcome to Impilo!" },
         Body: {
           Text: {
-            Data: `Hi ${fullName},\n\nYou have been successfully added to our Impilo Magazine subscriber list.\nThank you for joining us!\n\nRegards,\nImpilo Team`,
+            Data: `Hi ${fullname},\n\nYou have been successfully added to our Impilo Magazine subscriber list.\nThank you for joining us!\n\nRegards,\nImpilo Team`,
           },
         },
       },
@@ -143,15 +143,7 @@ async function notifySubscriber(email, phone, fullName) {
 
     await ses.sendEmail(emailParams).promise();
 
-    if (phone) {
-      await sns
-        .publish({
-          Message: `Hi ${fullName}, welcome to Impilo Magazine!`,
-          PhoneNumber: phone,
-        })
-        .promise();
-    }
-
+ 
     console.log(`✉️ Welcome email sent to ${email}`);
     return true;
   } catch (err) {

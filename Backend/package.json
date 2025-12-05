@@ -7,6 +7,7 @@
     "start": "pm2 start src/server.js --name backend-reg",
     "dev": "nodemon src/server.js --trace-warnings",
     "stop": "pm2 stop backend-reg",
+    "status": "pm2 status backemd-reg",
     "restart": "pm2 restart backend-reg"
   },
   "keywords": [],

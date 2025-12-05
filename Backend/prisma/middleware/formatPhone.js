@@ -1,23 +1,18 @@
-module.exports = async (params, next) => {
-  // Only act on create/update of registrations
-  if (params.model === "Registration" && ["create", "update"].includes(params.action)) {
-    const data = params.args.data;
-    if (data && data.phone) {
-      // Clean input
-      let phone = data.phone.toString().replace(/\D/g, "");
+function formatPhone(phone) {
+  if (!phone) return phone;
 
-      // Convert to +27 format
-      if (phone.startsWith("0")) {
-        phone = "+27" + phone.substring(1);
-      } else if (!phone.startsWith("+27")) {
-        phone = "+27" + phone;
-      }
+  let cleaned = phone.toString().replace(/\D/g, "");
 
-      data.phone = phone;
-      params.args.data = data;
-    }
+  // Convert to +27 format
+  if (cleaned.startsWith("0")) {
+    cleaned = "+27" + cleaned.substring(1);
+  } else if (!cleaned.startsWith("27") && !cleaned.startsWith("+27")) {
+    cleaned = "+27" + cleaned;
+  } else if (cleaned.startsWith("27")) {
+    cleaned = "+" + cleaned;
   }
 
-  // Proceed with next middleware or query
-  return next(params);
-};
+  return cleaned;
+}
+
+module.exports = { formatPhone };

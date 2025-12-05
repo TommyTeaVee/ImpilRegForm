@@ -65,3 +65,10 @@ model Admin {
   passwordHash String
   role         String   @default("admin")
 }
+
+model Subscriber {
+  id            Int      @id @default(autoincrement())
+  fullname      String
+  email         String   @unique
+  subscribedAt  DateTime @default(now())
+}

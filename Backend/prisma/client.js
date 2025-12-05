@@ -3,6 +3,6 @@ const prisma = new PrismaClient();
 
 // Attach middleware
 const formatPhone = require("./middleware/formatPhone");
-prisma.$use(formatPhone);
+await prisma.$extends(formatPhone);
 
 module.exports = prisma;
