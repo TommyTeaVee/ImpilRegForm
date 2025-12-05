@@ -5,7 +5,9 @@ const registrationRoutes = require("./routes/registration");
 const requireAdmin = require("./auth/requireAdmin");
 const subscribeRoutes = require('./routes/subscriber')
 const app = express();
-
+app.use(express.json({limit:"500mb"}));
+ app.use(express.urlencoded({ extended: true, limit: "500mb" }));
+ 
 // ALLOW YOUR FRONTEND
 const allowedOrigins = [
   "http://127.0.0.1:5500",
