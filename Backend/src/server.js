@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 5050;
     await seedSubs();
    await dbS3Seed()} */
   try {
+     await seedAdmin(),
     app.listen(PORT, () => console.log(`🚀 Backend on http://localhost:${PORT}`)); } catch (e) {
     console.error("Failed to start:", e);
     process.exit(1);
