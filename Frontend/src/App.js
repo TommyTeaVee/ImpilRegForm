@@ -6,6 +6,7 @@ import RegistrationDetail from "./components/RegistrationDetail";
 import AdminLogin from "./components/AdminLogin";
 import ModelRegistrationForm from "./components/NewForm";
 import AdminSubscribers from "./components/AdminSubscribers";
+import ProtectedRoute from "./components/ProtectedRoutes";
 
 export default function App() {
   return (
@@ -17,10 +18,26 @@ export default function App() {
           <Route path="/" element={<ModelRegistrationForm/>}/>
           {/* Admin Dashboard */}
           <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />  
-          {/* Registration Detail Page */}
-          <Route path="/admin/registrations/:id" element={<RegistrationDetail />} />
-          <Route path="/admin/subscribers" element={<AdminSubscribers />} /> 
+          <Route
+  path="/admin/dashboard"
+  element={
+    <ProtectedRoute>
+      <AdminDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+
+<Route
+  path="/admin/registrations/all/:id"
+  element={
+    <ProtectedRoute>
+      <RegistrationDetail />
+    </ProtectedRoute>
+  }
+/>
+          <Route path="/admin/subscribers" element={
+            <ProtectedRoute><AdminSubscribers /></ProtectedRoute>} /> 
           {/* Redirect any unknown route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

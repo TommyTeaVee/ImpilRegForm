@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   getRegistrationById,
   updateRegistrationStatus,
   deleteRegistration,
-  getRegistrations,
 } from "../api";
+import { AuthContext } from "../AuthContext";
 
 const imageSections = [
   { label: "Profile", keys: ["profileImage"] },
@@ -21,7 +21,7 @@ const imageSections = [
     label: "Sportswear / Summerwear / Swimwear",
     keys: ["sportswear", "summerwear", "swimwear"],
   },
-  { label: "Extra Images", keys: ["extraImages"] }, // stored as array
+  { label: "Extra Images", keys: ["extraImages"] },
 ];
 
 export default function RegistrationDetail() {
@@ -29,16 +29,31 @@ export default function RegistrationDetail() {
   const navigate = useNavigate();
   const [registration, setRegistration] = useState(null);
 
+  // ⭐ MUST include loading for refresh fix
+  const { token, loading, logout } = useContext(AuthContext);
+
   useEffect(() => {
-    fetchRegistration();
-  }, []);
+    if (loading) return; // ⛔ WAIT for AuthContext to restore token
+
+    if (!token) {
+      navigate("/admin-login");
+      return;
+    } 
+
+    fetchRegistration(); // ✔ Safe to fetch now
+
+  }, [loading, token]);
 
   const fetchRegistration = async () => {
     try {
       const { data } = await getRegistrationById(id);
       setRegistration(data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching registration:", err);
+
+      // Backend returned 401 → force login
+      logout();
+      navigate("/admin/dashboard");
     }
   };
 
@@ -49,16 +64,42 @@ export default function RegistrationDetail() {
 
   const handleDelete = async () => {
     await deleteRegistration(id);
-    navigate("/admin");
+    navigate("/admin/dashboard");
   };
 
-  if (!registration) return <p className="p-6">Loading...</p>;
+  if (loading) {
+    return <p className="p-6 text-yellow-500">Loading...</p>;
+  }
 
-  // fallback placeholder
+  if (!registration) {
+    return <p className="p-6 text-yellow-500">Loading registration...</p>;
+  }
+
   const placeholder = "https://via.placeholder.com/150";
 
   return (
     <div className="p-6 max-w-5xl mx-auto bg-white/70 backdrop-blur-lg rounded-2xl shadow-lg border border-yellow-500">
+
+      {/* Back + Logout */}
+      <div className="flex justify-between mb-4">
+        <button
+          onClick={() => navigate("/admin/dashboard")}
+          className="px-3 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600"
+        >
+          Back to Dashboard
+        </button>
+
+        <button
+          onClick={() => {
+            logout();
+            navigate("/admin-login");
+          }}
+          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+
       {/* Banner */}
       <div className="mb-6 text-center">
         <h1 className="text-3xl font-bold text-black">
@@ -77,20 +118,25 @@ export default function RegistrationDetail() {
         <p><strong>Gender:</strong> {registration.gender}</p>
         <p><strong>Model Type:</strong> {registration.modelType}</p>
         {registration.bio && <p><strong>Bio:</strong> {registration.bio}</p>}
-        {registration.allergiesOrSkin && <p><strong>Allergies / Skin Info:</strong> {registration.allergiesOrSkin}</p>}
+        {registration.allergiesOrSkin && (
+          <p><strong>Allergies / Skin Info:</strong> {registration.allergiesOrSkin}</p>
+        )}
       </div>
 
       {/* Measurements */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-yellow-600 mb-2">Measurements</h2>
         <p>
-          <strong>Height:</strong> {registration.height} cm | <strong>Weight:</strong> {registration.weight} kg
+          <strong>Height:</strong> {registration.height} cm |{" "}
+          <strong>Weight:</strong> {registration.weight} kg
         </p>
         <p>
           <strong>Bust/Waist/Hips:</strong> {registration.bust}/{registration.waist}/{registration.hips}
         </p>
         <p>
-          <strong>Shoe Size:</strong> {registration.shoe} | <strong>Hair:</strong> {registration.hairColor} | <strong>Eyes:</strong> {registration.eyeColor}
+          <strong>Shoe Size:</strong> {registration.shoe} |{" "}
+          <strong>Hair:</strong> {registration.hairColor} |{" "}
+          <strong>Eyes:</strong> {registration.eyeColor}
         </p>
       </div>
 
@@ -111,7 +157,6 @@ export default function RegistrationDetail() {
             <h3 className="text-lg font-semibold mb-2">{section.label}</h3>
             <div className="flex gap-2 flex-wrap">
               {section.keys.map((key) => {
-                // handle array (extraImages)
                 if (key === "extraImages") {
                   return registration.extraImages?.length > 0 ? (
                     registration.extraImages.map((url, idx) => (
@@ -132,7 +177,6 @@ export default function RegistrationDetail() {
                   );
                 }
 
-                // single image
                 return (
                   <img
                     key={key}

@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginDetails } from "../api";
+import { AuthContext } from "../AuthContext";
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -18,8 +20,8 @@ export default function AdminLogin() {
     try {
       const { data } = await LoginDetails(form);
       if (data?.token) {
-        localStorage.setItem("adminToken", data.token);
-        navigate("/admin/dashboard");
+        login(data.token); // ⭐ Correct way
+        navigate("/admin/dashboard", { replace: true });
       } else {
         setError("Invalid login details");
       }
@@ -27,6 +29,8 @@ export default function AdminLogin() {
       setError("Login failed. Please try again.");
     }
   };
+
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-black">

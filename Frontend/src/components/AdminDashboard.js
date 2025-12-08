@@ -1,23 +1,41 @@
-import React, { useEffect, useState } from "react";
-
+import React, { useEffect, useState, useContext } from "react";
 import {
   getRegistrations,
   updateRegistrationStatus,
   deleteRegistration,
 } from "../api";
 import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../AuthContext";
 
 export default function AdminDashboard() {
   const [items, setItems] = useState([]);
   const navigate = useNavigate();
+  
+  // ⭐ MUST include loading, not only token
+  const { token, loading, logout } = useContext(AuthContext);
+
   const load = async () => {
-    const { data } = await getRegistrations();
-    setItems(data);
+    try {
+      const { data } = await getRegistrations();
+      setItems(data);
+    } catch (err) {
+      console.error("Error loading registrations:", err);
+      logout();
+      navigate("/admin-login");
+    }
   };
 
+  // ⭐ Corrected logic
   useEffect(() => {
-    load();
-  }, []);
+    if (loading) return;                // Wait for AuthContext
+    
+    if (!token) {                       // Only redirect AFTER loading
+      navigate("/admin-login");
+      return;
+    }
+
+    load();                             // Safe to fetch data now
+  }, [loading, token]);
 
   const setStatus = async (id, status) => {
     await updateRegistrationStatus(id, status);
@@ -28,24 +46,39 @@ export default function AdminDashboard() {
     await deleteRegistration(id);
     await load();
   };
-const logout= async()=>{
-  await localStorage.removeItem("adminToken");
-        navigate("/admin-login");
-}
+
   return (
     <div className="p-6 max-w-6xl mx-auto bg-black border border-yellow-500 rounded shadow-lg">
-     <div>
-    <button
-                  onClick={() => logout()}
-                  className="px-3 py-1  inset-y-0 right-0 rounded bg-red-600 text-white hover:bg-red-700 transition"
-                >
-                  Logout
-                </button>
-                <br></br></div>
+      
+      {/* Top Bar */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-yellow-500">Admin Panel</h2>
+
+        <div className="space-x-3">
+          <button
+            onClick={() => navigate("/admin/subscribers")}
+            className="px-3 py-1 rounded bg-yellow-500 text-black hover:bg-yellow-600 transition"
+          >
+            View Subscribers
+          </button>
+
+          <button
+            onClick={() => {
+              logout();
+              navigate("/admin-login");
+            }}
+            className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
       <h1 className="text-3xl font-bold mb-6 text-yellow-500 text-center">
         Admin Dashboard
       </h1>
-      
+
+      {/* Registrations Table */}
       <table className="w-full border-collapse border border-yellow-500 text-white">
         <thead className="bg-yellow-500 text-black">
           <tr>
@@ -58,10 +91,7 @@ const logout= async()=>{
         </thead>
         <tbody>
           {items.map((r) => (
-            <tr
-              key={r.id}
-              className="hover:bg-gray-900 transition-colors duration-200"
-            >
+            <tr key={r.id} className="hover:bg-gray-900 transition">
               <td className="p-2 border border-yellow-500">{r.fullName}</td>
               <td className="p-2 border border-yellow-500">{r.email}</td>
               <td className="p-2 border border-yellow-500">{r.modelType}</td>
@@ -98,8 +128,8 @@ const logout= async()=>{
                   Delete
                 </button>
                 <Link
-                  to={`/admin/registrations/${r.id}`}
-                  className="px-3 py-1 rounded bg-yellow-500 text-black font-semibold hover:bg-yellow-600 transition"
+                  to={`/admin/registrations/all/${r.id}`}
+                  className="px-3 py-1 rounded bg-yellow-500 text-black hover:bg-yellow-600 transition"
                 >
                   View
                 </Link>

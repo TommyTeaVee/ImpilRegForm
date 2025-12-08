@@ -12,7 +12,10 @@ app.use(express.json({limit:"500mb"}));
 const cors_origin = process.env.CORS_ORIGIN
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : []
 //app.use(cors({cors_origin}));
-
+app.use(cors({
+  origin: cors_origin,
+  credentials: true
+}));
 app.use(express.json());
 
 // Public routes
