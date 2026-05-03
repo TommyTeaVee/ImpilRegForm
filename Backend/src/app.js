@@ -1,4 +1,3 @@
-require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
@@ -10,23 +9,12 @@ app.use(express.json({limit:"500mb"}));
  app.use(express.urlencoded({ extended: true, limit: "500mb" }));
  
 // ALLOW YOUR FRONTEND
-
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim())
-  : [];
-
+const cors_origin = process.env.CORS_ORIGIN
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : []
+//app.use(cors({cors_origin}));
 app.use(cors({
-  origin: function (origin, callback) {
-    console.log("Incoming origin:", origin);
-
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log("Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
+  origin: cors_origin,
+  credentials: true
 }));
 app.use(express.json());
 
