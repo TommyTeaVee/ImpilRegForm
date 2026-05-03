@@ -7,8 +7,8 @@ const seedModel = require("./auth/modelSeed")
 const seedSubs = require('./auth/subscriberseed')
 const dbS3Seed = require("./auth/dbS3Seeds")
 
-const PORT = process.env.PORT || 5050;
-
+const PORT = process.env.PORT || 35050;
+ 
 /* async function start() {
 
     await prisma.$connect;
@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 5050;
     await seedSubs();
    await dbS3Seed()} */
   try {
+    seedAdmin()
     app.listen(PORT, () => console.log(`🚀 Backend on http://localhost:${PORT}`)); } catch (e) {
     console.error("Failed to start:", e);
     process.exit(1);

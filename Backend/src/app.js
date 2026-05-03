@@ -12,7 +12,7 @@ app.use(express.json({limit:"500mb"}));
 const allowedOrigins = [
   "http://127.0.0.1:5500",
   "http://localhost:5500",
-  "http://localhost:3000",   // optional if using React
+  //"http://localhost:3000",   // optional if using React
 ];
 app.use(cors({allowedOrigins  }));
 
@@ -26,6 +26,6 @@ app.get('/', (req, res)=>{
 })
 
 // Admin protected routes
-app.use("/api/admin/registrations", registrationRoutes);
-app.use("/api", subscribeRoutes)
+app.use("/api/admin/registrations", requireAdmin , registrationRoutes);
+app.use("/api", requireAdmin , subscribeRoutes)
 module.exports = app;

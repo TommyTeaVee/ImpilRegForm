@@ -10,7 +10,7 @@ AWS.config.update({
 const sns = new AWS.SNS();
 
 const params = {
-  Message: 'OG IS New CTO', // The SMS message
+  Message: 'Sima no Sibongile baya  bora 🙄', // The SMS message
   PhoneNumber: '+27672806288' // The recipient's phone number in E.164 format
 };
 

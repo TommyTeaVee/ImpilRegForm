@@ -8,53 +8,53 @@ datasource db {
 }
 
 model Registration {
-  id             String   @id @default(uuid())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  fullName       String
-  email          String @unique
-  phone          String @unique
-  dob            DateTime
-  gender         String
-  modelType      String      // 'Featured' or 'InHouse'
-  bio            String?     // required if InHouse
-  allergiesOrSkin String?    // required if InHouse
+  fullName        String
+  email           String   @unique
+  phone           String   @unique
+  dob             DateTime
+  gender          String
+  modelType       String // 'Featured' or 'InHouse'
+  bio             String? // required if InHouse
+  allergiesOrSkin String? // required if InHouse
 
   // measurements
-  height         Float?
-  weight         Float?
-  bust           Float?
-  waist          Float?
-  hips           Float?
-  shoe           String?
-  hairColor      String?
-  eyeColor       String?
+  height    Float?
+  weight    Float?
+  bust      Float?
+  waist     Float?
+  hips      Float?
+  shoe      String?
+  hairColor String?
+  eyeColor  String?
 
   // socials
-  facebook       String?
-  instagram      String?
-  tiktok         String?
-  portfolio       String?
-  agency          String?
+  facebook   String?
+  instagram  String?
+  tiktok     String?
+  portfolio  String?
+  agency     String?
   // visual arts (checkbox multi-select)
-  visualArts     String[]    // Postgres text[]
-  status         String?     // 'approved' | 'rejected' | 'pending'
+  visualArts String[] // Postgres text[]
+  status     String? // 'approved' | 'rejected' | 'pending'
 
   // images stored as S3 URLs
-  profileImage   String?
-  fullBodyImage  String?
-  fullDress      String?
-  fullShorts     String?
-  fullJeans      String?
-  closeForward   String?
-  closeLeft      String?
-  closeRight     String?
-  sportswear     String?
-  summerwear     String?
-  swimwear       String?
+  profileImage  String?
+  fullBodyImage String?
+  fullDress     String?
+  fullShorts    String?
+  fullJeans     String?
+  closeForward  String?
+  closeLeft     String?
+  closeRight    String?
+  sportswear    String?
+  summerwear    String?
+  swimwear      String?
 
-  extraImages    String[]    // text[]
+  extraImages String[] // text[]
 }
 
 model Admin {
@@ -67,8 +67,8 @@ model Admin {
 }
 
 model Subscriber {
-  id            Int      @id @default(autoincrement())
-  fullname      String
-  email         String   @unique
-  subscribedAt  DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  fullname     String
+  email        String   @unique
+  subscribedAt DateTime @default(now())
 }
