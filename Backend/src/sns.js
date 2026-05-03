@@ -1,23 +1,26 @@
-const AWS = require('aws-sdk');
-require('dotenv').config()
-// Configure AWS with your credentials and region
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-east-1', // e.g., 'us-east-1'
+require("dotenv").config();
+
+const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
+
+const sns = new SNSClient({
+  region: process.env.AWS_REGION || "us-east-1",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID ,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY 
+  },
 });
 
-const sns = new AWS.SNS();
+async function sendSms() {
+  try {
+    const response = await sns.send(
+      new PublishCommand({
+        Message: "OG IS New CTO",
+        PhoneNumber: "+27672806288",
+      })
+    );
 
-const params = {
-  Message: 'OG IS New CTO', // The SMS message
-  PhoneNumber: '+27672806288' // The recipient's phone number in E.164 format
-};
-
-sns.publish(params, (err, data) => {
-  if (err) {
-    console.error("Error sending SMS:", err);
-  } else {
-    console.log("SMS sent successfully:", data);
+    console.log("SMS sent:", response);
+  } catch (err) {
+    console.error("SNS error:", err);
   }
-});
+}

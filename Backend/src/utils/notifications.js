@@ -1,30 +1,57 @@
-const AWS = require("aws-sdk");
-require('dotenv').config()
-// Configure AWS
-AWS.config.update({
-  region: process.env.AWS_REGION, 
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-});
+require("dotenv").config();
 
-// SES for email
-const ses = new AWS.SES({ apiVersion: "2010-12-01" });
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
 
-// SNS for SMS
-const sns = new AWS.SNS({ apiVersion: "2010-03-31" });
+const region = process.env.AWS_REGION || "us-east-1";
 
-/**
- * Send email and SMS notification to model when approved
- * @param {string} email - recipient email
- * @param {string} phone - recipient phone number (include country code, e.g., +27712345678)
- * @param {string} fullname - recipient name
- */
-async function notifyModelDissApproved(email, phone, fullname) {
-  try {
-    // --- Email via SES ---
-    const emailParams = {
-      Source: "no-reply@impilomag.co.za",
-      Destination: { ToAddresses: [email] },
+const credentials =
+  process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+    ? {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+      }
+    : undefined;
+
+const ses = new SESClient({ region, credentials });
+const sns = new SNSClient({ region, credentials });
+
+const DEFAULT_FROM = "no-reply@impilomag.co.za";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PHONE = process.env.ADMIN_PHONE 
+
+function isValidEmail(email) {
+  return typeof email === "string" && email.includes("@");
+}
+
+function normalizePhone(phone) {
+  if (!phone) return null;
+
+  let clean = String(phone).replace(/\s+/g, "");
+
+  if (clean.startsWith("0")) {
+    clean = `+27${clean.slice(1)}`;
+  }
+
+  if (!clean.startsWith("+")) {
+    clean = `+${clean}`;
+  }
+
+  return clean;
+}
+
+async function sendEmail({ to, subject, text, source = DEFAULT_FROM }) {
+  if (!isValidEmail(to)) {
+    console.error("Invalid email:", to);
+    return false;
+  }
+
+  await ses.send(
+    new SendEmailCommand({
+      Source: source,
+      Destination: {
+        ToAddresses: [to],
+      },
       Message: {
         Subject: { Data: "Registration not Approved!" },
         Body: {
@@ -33,7 +60,7 @@ async function notifyModelDissApproved(email, phone, fullname) {
           },
         },
       },
-    };
+    })
     await ses.sendEmail(emailParams).promise();
 
     // --- SMS via SNS ---
