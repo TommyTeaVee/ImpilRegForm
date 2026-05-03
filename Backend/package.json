@@ -7,9 +7,12 @@
     "start": "pm2 start src/server.js --name backend-reg",
     "dev": "nodemon src/server.js --trace-warnings",
     "stop": "pm2 stop backend-reg",
-    "status": "pm2 status backemd-reg",
+    "status": "pm2 status backend-reg",
     "restart": "pm2 restart backend-reg"
   },
+  "prisma": {
+  "seed": "node src/seed.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -10,7 +10,7 @@ async function seedAdmin() {
   if (existing) return;
 
   const passwordHash = await bcrypt.hash(plain, 10);
-  await prisma.admin.create({ data: { email, passwordHash } });
+  await prisma.admin.upsert({ data: { email, passwordHash } });
   console.log("✅ Seeded admin:", email);
 }
 
