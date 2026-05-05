@@ -168,7 +168,7 @@ router.get("/all/:id", async (req, res) => {
 });
 
 // handle status update (approved/rejected)
-router.patch("/:id/status", async (req, res) => {
+router.patch("/all:id/status", async (req, res) => {
   try {
     const { status } = req.body;
     const updated = await prisma.registration.update({
