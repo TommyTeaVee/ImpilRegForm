@@ -5,6 +5,7 @@ const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
 
 const region = process.env.AWS_REGION || "us-east-1";
 
+// Prefer IAM role in production, fallback to env locally
 const credentials =
   process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
     ? {
@@ -16,9 +17,17 @@ const credentials =
 const ses = new SESClient({ region, credentials });
 const sns = new SNSClient({ region, credentials });
 
-const DEFAULT_FROM = "no-reply@impilomag.co.za";
+const DEFAULT_FROM = process.env.EMAIL_FROM || "no-reply@impilomag.co.za";
+const REPLY_TO = process.env.REPLY_TO || "info@impilomag.co.za";
+
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@impilomag.co.za";
 const ADMIN_PHONE = process.env.ADMIN_PHONE || "+27672806288";
+
+const IS_SMS_ENABLED = process.env.SMS_ENABLED === "true"; // disable in sandbox easily
+
+// ---------------------
+// Helpers
+// ---------------------
 
 function isValidEmail(email) {
   return typeof email === "string" && email.includes("@");
@@ -40,15 +49,20 @@ function normalizePhone(phone) {
   return clean;
 }
 
-async function sendEmail({ to, subject, text, source = DEFAULT_FROM }) {
-  if (!isValidEmail(to)) {
-    console.error("Invalid email:", to);
-    return false;
-  }
+// ---------------------
+// Core Services
+// ---------------------
 
-  await ses.send(
-    new SendEmailCommand({
+async function sendEmail({ to, subject, text, source = DEFAULT_FROM }) {
+  try {
+    if (!isValidEmail(to)) {
+      console.warn("Invalid email skipped:", to);
+      return false;
+    }
+
+    const command = new SendEmailCommand({
       Source: source,
+      ReplyToAddresses: [REPLY_TO],
       Destination: {
         ToAddresses: [to],
       },
@@ -64,143 +78,157 @@ async function sendEmail({ to, subject, text, source = DEFAULT_FROM }) {
           },
         },
       },
-    })
-  );
+    });
 
-  return true;
+    await ses.send(command);
+
+    console.log(`📧 Email sent → ${to}`);
+    return true;
+  } catch (err) {
+    console.error("❌ Email error:", err.message);
+    return false;
+  }
 }
 
 async function sendSms({ phone, message }) {
-  const phoneNumber = normalizePhone(phone);
+  try {
+    if (!IS_SMS_ENABLED) {
+      console.warn("⚠️ SMS disabled (sandbox mode)");
+      return false;
+    }
 
-  if (!phoneNumber) return false;
+    const phoneNumber = normalizePhone(phone);
 
-  await sns.send(
-    new PublishCommand({
+    if (!phoneNumber) {
+      console.warn("Invalid phone skipped:", phone);
+      return false;
+    }
+
+    const command = new PublishCommand({
       Message: message,
       PhoneNumber: phoneNumber,
-    })
-  );
+      MessageAttributes: {
+        "AWS.SNS.SMS.SMSType": {
+          DataType: "String",
+          StringValue: "Transactional",
+        },
+      },
+    });
+
+    await sns.send(command);
+
+    console.log(`📱 SMS sent → ${phoneNumber}`);
+    return true;
+  } catch (err) {
+    console.error("❌ SMS error:", err.message);
+    return false;
+  }
+}
+
+// ---------------------
+// Notifications
+// ---------------------
+
+async function notifyModelApproved(email, phone, fullname) {
+  const name = fullname || "Applicant";
+
+  await sendEmail({
+    to: email,
+    subject: "Welcome to Impilo Talent Agency 🎉",
+    text: `Hi ${name},
+
+Great news — your model registration has been approved!
+
+We’re excited to have you join Impilo Talent Agency.
+
+If you have any questions, simply reply to this email.
+
+Warm regards,  
+Impilo Team`,
+  });
+
+  await sendSms({
+    phone,
+    message: `Hi ${name}, your Impilo model registration is approved! 🎉`,
+  });
 
   return true;
 }
 
 async function notifyModelDissApproved(email, phone, fullname) {
-  try {
-    const name = fullname || "Applicant";
+  const name = fullname || "Applicant";
 
-    await sendEmail({
-      to: email,
-      subject: "Registration Not Approved",
-      text: `Hi ${name},
+  await sendEmail({
+    to: email,
+    subject: "Impilo Registration Update",
+    text: `Hi ${name},
 
-We regret to inform you that your modelling application was not approved.
+Thank you for your application.
 
-Best regards,
+Unfortunately, your submission was not approved at this time.
+
+We encourage you to apply again in future.
+
+Best regards,  
 Impilo Team`,
-    });
+  });
 
-    await sendSms({
-      phone,
-      message: `Hi ${name}, we regret to inform you that your modelling application was not approved. Impilo Team`,
-    });
+  await sendSms({
+    phone,
+    message: `Hi ${name}, your Impilo application was not approved this time.`,
+  });
 
-    console.log(`Notifications sent to ${email} and ${phone || "no phone"}`);
-    return true;
-  } catch (err) {
-    console.error("Error sending disapproval notification:", err);
-    return false;
-  }
-}
-
-async function notifyModelApproved(email, phone, fullname) {
-  try {
-    const name = fullname || "Applicant";
-
-    await sendEmail({
-      to: email,
-      subject: "Registration Approved",
-      text: `Hi ${name},
-
-Your model registration has been approved! Welcome to Impilo Talent Agency.
-
-Best regards,
-Impilo Team`,
-    });
-
-    await sendSms({
-      phone,
-      message: `Hi ${name}, your model registration has been approved! - Impilo Talent Agency`,
-    });
-
-    console.log(`Notifications sent to ${email} and ${phone || "no phone"}`);
-    return true;
-  } catch (err) {
-    console.error("Error sending approval notification:", err);
-    return false;
-  }
+  return true;
 }
 
 async function notifyNewSubmission(email, phone, fullname) {
-  try {
-    const name = fullname || "Unknown applicant";
+  const name = fullname || "Unknown applicant";
 
-    await sendEmail({
-      source: "agency@impilomag.co.za",
-      to: ADMIN_EMAIL,
-      subject: "New Model Registration Submitted",
-      text: `Hi Admin,
-
-A new model registration has been submitted.
+  await sendEmail({
+    source: "agency@impilomag.co.za",
+    to: ADMIN_EMAIL,
+    subject: "📩 New Model Registration",
+    text: `New submission received:
 
 Name: ${name}
 Email: ${email || "N/A"}
 Phone: ${phone || "N/A"}
 
-Login to the dashboard to review.
+Login to review.`,
+  });
 
-- Impilo Talent System`,
-    });
+  await sendSms({
+    phone: ADMIN_PHONE,
+    message: `New submission: ${name}`,
+  });
 
-    await sendSms({
-      phone: ADMIN_PHONE,
-      message: `New Model Submission: ${name}, ${email || "N/A"}, ${phone || "N/A"}`,
-    });
-
-    console.log(`Admin notified: ${name}`);
-    return true;
-  } catch (err) {
-    console.error("Error notifying admin:", err);
-    return false;
-  }
+  return true;
 }
 
 async function notifySubscriber(email, phone, fullname) {
-  try {
-    const name = fullname || "Subscriber";
+  const name = fullname || "Subscriber";
 
-    await sendEmail({
-      to: email,
-      subject: "Welcome to Impilo Magazine",
-      text: `Hi ${name},
+  await sendEmail({
+    to: email,
+    subject: "Welcome to Impilo Magazine ✨",
+    text: `Hi ${name},
 
-Thank you for subscribing to Impilo Magazine!
+Thank you for subscribing to Impilo Magazine.
 
-Best regards,
-The Impilo Team`,
-    });
+Stay tuned for exclusive content and features.
 
-    await sendSms({
-      phone,
-      message: `Hi ${name}, thanks for subscribing to Impilo Magazine!`,
-    });
+– Impilo Team`,
+  });
 
-    return true;
-  } catch (err) {
-    console.error("Error sending subscriber notification:", err);
-    return false;
-  }
+  await sendSms({
+    phone,
+    message: `Hi ${name}, welcome to Impilo Magazine!`,
+  });
+
+  return true;
 }
+
+// ---------------------
 
 module.exports = {
   notifyModelApproved,
