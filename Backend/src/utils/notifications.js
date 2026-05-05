@@ -20,7 +20,7 @@ const sns = new SNSClient({ region, credentials });
 const DEFAULT_FROM = process.env.EMAIL_FROM || "no-reply@impilomag.co.za";
 const REPLY_TO = process.env.REPLY_TO || "info@impilomag.co.za";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "agecncy@impilomag.co.za";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "agency@impilomag.co.za";
 const ADMIN_PHONE = process.env.ADMIN_PHONE || "+27672806288";
 
 const IS_SMS_ENABLED = process.env.SMS_ENABLED === "true"; // disable in sandbox easily
