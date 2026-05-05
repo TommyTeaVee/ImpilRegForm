@@ -13,7 +13,7 @@ const toCDN = (s3Url) => {
 
 const storage = multerS3({
   s3,
-  bucket: process.env.S3_BUCKET,
+  bucket: process.env.S3_BUCKETS,
  // acl: "public-read",
   contentType: multerS3.AUTO_CONTENT_TYPE,
   key: (req, file, cb) => {
