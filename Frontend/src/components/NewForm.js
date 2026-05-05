@@ -206,7 +206,7 @@ export default function TalentApplicationForm() {
       const totalBytes = fileList.reduce((s, f) => s + (f.size || 0), 0) || 0;
 
       // If no files, fallback to a simple POST
-      const url = `${process.env.REACT_APP_SERVER_URL || ""}/registrations`;
+      const url = `${process.env.REACT_APP_API_URL || ""}/registrations`;
 
       await axios.post(url, fd, {
         headers: { "Content-Type": "multipart/form-data" },
