@@ -9,8 +9,8 @@ const region = process.env.AWS_REGION || "us-east-1";
 const credentials =
   process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
     ? {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID.trim(),
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY.trim(),
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       }
     : undefined;
 
@@ -23,7 +23,7 @@ const REPLY_TO = process.env.REPLY_TO || "info@impilomag.co.za";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "agency@impilomag.co.za";
 const ADMIN_PHONE = process.env.ADMIN_PHONE || "+27672806288";
 
-const IS_SMS_ENABLED = process.env.SMS_ENABLED === "true"; // disable in sandbox easily
+//const IS_SMS_ENABLED = process.env.SMS_ENABLED === "true"; // disable in sandbox easily
 
 // ---------------------
 // Helpers
@@ -92,10 +92,10 @@ async function sendEmail({ to, subject, text, source = DEFAULT_FROM }) {
 
 async function sendSms({ phone, message }) {
   try {
-    if (!IS_SMS_ENABLED) {
+    i/* f (!IS_SMS_ENABLED) {
       console.warn("⚠️ SMS disabled (sandbox mode)");
       return false;
-    }
+    } */
 
     const phoneNumber = normalizePhone(phone);
 
