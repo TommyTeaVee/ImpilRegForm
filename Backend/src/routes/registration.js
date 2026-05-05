@@ -145,9 +145,19 @@ router.get("/", (req, res) => res.send("Welcome, server online"));
 // get all registrations
 router.get("/all", async (req, res) => {
   try {
+    const { status } = req.query;
+
+    const where = {};
+
+    if (status) {
+      where.status = status;
+    }
+
     const items = await prisma.registration.findMany({
+      where,
       orderBy: { createdAt: "desc" },
     });
+
     res.json(items);
   } catch {
     res.status(500).json({ error: "server error" });
@@ -168,7 +178,7 @@ router.get("/all/:id", async (req, res) => {
 });
 
 // handle status update (approved/rejected)
-router.patch("/all:id/status", async (req, res) => {
+router.patch("/all/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
     const updated = await prisma.registration.update({
