@@ -181,18 +181,30 @@ router.get("/all/:id", async (req, res) => {
 router.patch("/all/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
+
+    const allowedStatuses = ["pending", "approved", "rejected"];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        error: "Invalid status",
+      });
+    }
+
     const updated = await prisma.registration.update({
       where: { id: req.params.id },
       data: { status },
     });
 
+    // SEND NOTIFICATIONS
     if (status === "approved") {
       const { email, phone, fullName } = updated;
+
       notifyModelApproved(email, phone, fullName).catch((e) =>
         console.error("Notify approve error:", e)
       );
     } else if (status === "rejected") {
       const { email, phone, fullName } = updated;
+
       notifyModelDissApproved(email, phone, fullName).catch((e) =>
         console.error("Notify reject error:", e)
       );
@@ -201,7 +213,10 @@ router.patch("/all/:id/status", async (req, res) => {
     res.json(updated);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error" });
+
+    res.status(500).json({
+      error: "Server error",
+    });
   }
 });
 
