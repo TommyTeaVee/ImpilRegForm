@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^13.5.0",
     "autoprefixer": "^10.4.21",
     "axios": "^1.12.2",
+    "browser-image-compression": "^2.0.2",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.541.0",
     "postcss": "^8.5.6",
