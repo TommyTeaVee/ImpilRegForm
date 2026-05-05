@@ -92,7 +92,7 @@ async function sendEmail({ to, subject, text, source = DEFAULT_FROM }) {
 
 async function sendSms({ phone, message }) {
   try {
-    i/* f (!IS_SMS_ENABLED) {
+    /* f (!IS_SMS_ENABLED) {
       console.warn("⚠️ SMS disabled (sandbox mode)");
       return false;
     } */
