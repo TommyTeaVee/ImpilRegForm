@@ -9,9 +9,10 @@ import { AuthContext } from "../AuthContext";
 
 export default function AdminDashboard() {
   const [items, setItems] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null); // image URL for modal
+  const [showModal, setShowModal] = useState(false); // modal visibility
   const navigate = useNavigate();
-  
-  // ⭐ MUST include loading, not only token
+
   const { token, loading, logout } = useContext(AuthContext);
 
   const load = async () => {
@@ -25,16 +26,13 @@ export default function AdminDashboard() {
     }
   };
 
-  // ⭐ Corrected logic
   useEffect(() => {
-    if (loading) return;                // Wait for AuthContext
-    
-    if (!token) {                       // Only redirect AFTER loading
+    if (loading) return;
+    if (!token) {
       navigate("/admin-login");
       return;
     }
-
-    load();                             // Safe to fetch data now
+    load();
   }, [loading, token]);
 
   const setStatus = async (id, status) => {
@@ -47,13 +45,25 @@ export default function AdminDashboard() {
     await load();
   };
 
+  const openImageViewer = (imageUrl) => {
+    if (imageUrl) {
+      setSelectedImage(imageUrl);
+      setShowModal(true);
+    } else {
+      alert("No image available for this registration.");
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedImage(null);
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto bg-black border border-yellow-500 rounded shadow-lg">
-      
       {/* Top Bar */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-yellow-500">Admin Panel</h2>
-
         <div className="space-x-3">
           <button
             onClick={() => navigate("/admin/subscribers")}
@@ -61,7 +71,6 @@ export default function AdminDashboard() {
           >
             View Subscribers
           </button>
-
           <button
             onClick={() => {
               logout();
@@ -133,11 +142,43 @@ export default function AdminDashboard() {
                 >
                   View
                 </Link>
+                {/* NEW: Image Viewer Button */}
+                <button
+                  onClick={() => openImageViewer(r.imageUrl)}
+                  className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+                >
+                  View Image
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* Modal for Image Viewer */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+          onClick={closeModal} // click backdrop to close
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] p-2 bg-black border-2 border-yellow-500 rounded-lg"
+            onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+          >
+            <button
+              onClick={closeModal}
+              className="absolute top-2 right-2 text-white bg-red-600 rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-700 transition"
+            >
+              ×
+            </button>
+            <img
+              src={selectedImage}
+              alt="Registration preview"
+              className="max-w-full max-h-[85vh] object-contain rounded"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
